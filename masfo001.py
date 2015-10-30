@@ -90,27 +90,65 @@ def DNASeqAlignment(DNASeq1,DNASeq2,outputPath):
     Array = []
 
     col = len(DNASeq1) + 1              #length of first + 1 for blanks
-    print col
     row = len(DNASeq2) + 1              #length of second + 1 for blanks
-    print row
 
-    for x in range(col):            #construct an array
+    for x in range(col):                #construct an array
         Array.append([0] * row)
  
-    for x in range(col):            #init 0th col
+    for x in range(col):                #init 0th col
         Array[x][0] = 0 - (.2*x)
 
-    for x in range(row):            #init 0th row
+    for x in range(row):                #init 0th row
         Array[0][x] = 0 - (.2*x)
 
-    for x in range(1, col):         #fill out the table
-        for y in range (1, row):
+    for x in range(1, col):             #fill out the table
+        for y in range(1, row):
             remove = Array[x - 1][y] - .2
             insert = Array[x][y - 1] - .2
             match = diff(x - 1, y - 1, DNASeq1, DNASeq2) + Array[x - 1][y - 1]
             Array[x][y] = max(remove, insert, match)
     
-    similarityScore = Array[col - 1][row - 1]
+    similarityScore = Array[col - 1][row - 1] #score = bottom right of array
+    
+    a = col - 1
+    b = row - 1
+    c = []
+    while (a != 0 and b != 0):          #find sequence
+        if (a != 0):
+            i = Array[a][b - 1]         #look above
+        if (a != 0 and b != 0):
+            j = Array[a - 1][b - 1]     #look diagonal
+        if ( b != 0):
+            k = Array[a - 1][b]         #look left
+
+        h = max(i, j, k)
+        if (h == i):
+            b = b - 1
+            c.append(1)                 
+        elif (h == j):
+            a = a - 1
+            b = b - 1
+            c.append(2)                 
+        elif (h == k):
+            a = a - 1
+            c.append(3)
+
+    seq1 = []
+    for x in DNASeq1:
+        seq1.append(x)
+    seq2 = []
+    for x in DNASeq2:
+        seq2.append(x)
+    for x in range (0, len(c)):         #make subsequence
+        if (c[x] == 1):                 #if moved up
+            seq2[row - x] = '_'
+        elif (c[x] == 2):               #if moved diagonal
+            continue 
+        elif (c[x] == 3):               #if moved left
+            seq1[col - x] = '_'
+
+    sequenceAlignment1 = ''.join(seq1)
+    sequenceAlignment2 = ''.join(seq2)
 
     #for c in range(col):
     #    for r in range(row):
