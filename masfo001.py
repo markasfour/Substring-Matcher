@@ -59,12 +59,20 @@ def studentInfo():
     info = info + 'Python version: ' + pythonVersion + '\n'
     return info
 
+def biggest(a, b, c):
+    Max = a
+    if b > Max:
+        Max = b
+    if c > Max:
+        c = Max
+    return Max
+
 def diff(x, y, DNASeq1, DNASeq2):
     if (DNASeq1[x] == DNASeq2[y]):
         return 1
     elif ((DNASeq1[x] == 'A' and DNASeq2[y] == 'T') or (DNASeq1[x] == 'T' and DNASeq2[y] == 'A')):
         return -.15
-    elif ((DNASeq1[x] == 'G' or DNASeq2[y] == 'C') or (DNASeq1[x] == 'C' and DNASeq2[y] == 'G')):
+    elif ((DNASeq1[x] == 'G' and DNASeq2[y] == 'C') or (DNASeq1[x] == 'C' and DNASeq2[y] == 'G')):
         return -.15
     else:
         return -.1
@@ -82,28 +90,33 @@ def DNASeqAlignment(DNASeq1,DNASeq2,outputPath):
     Array = []
 
     col = len(DNASeq1) + 1              #length of first + 1 for blanks
+    print col
     row = len(DNASeq2) + 1              #length of second + 1 for blanks
+    print row
 
-    for x in range(col):                #construct an array
+    for x in range(col):            #construct an array
         Array.append([0] * row)
  
-    for x in range(col - 1):            #init 0th col
+    for x in range(col):            #init 0th col
         Array[x][0] = 0 - (.2*x)
 
-    for x in range(row - 1):            #init 0th row
-        Array[0][x] = 0 - (2*x)
+    for x in range(row):            #init 0th row
+        Array[0][x] = 0 - (.2*x)
 
-    #for c in range(col - 1):
-    #    for r in range(row - 1):
-    #        print Array[c][r],
-    #    print
-
-    for x in range(1, col - 1):         #fill out the table
-        for y in range (1, row - 1):
+    for x in range(1, col):         #fill out the table
+        for y in range (1, row):
             remove = Array[x - 1][y] - .2
             insert = Array[x][y - 1] - .2
             match = diff(x - 1, y - 1, DNASeq1, DNASeq2) + Array[x - 1][y - 1]
             Array[x][y] = max(remove, insert, match)
+    
+    similarityScore = Array[col - 1][row - 1]
+
+    #for c in range(col):
+    #    for r in range(row):
+    #        print Array[c][r],
+    #    print
+
 
     #################################  Output Section  ######################################
     result = "Similarity score: " + str(similarityScore) + '\n'
