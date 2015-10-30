@@ -64,18 +64,18 @@ def biggest(a, b, c):
     if b > Max:
         Max = b
     if c > Max:
-        c = Max
+        Max = c
     return Max
 
 def diff(x, y, DNASeq1, DNASeq2):
     if (DNASeq1[x] == DNASeq2[y]):
         return 1
     elif ((DNASeq1[x] == 'A' and DNASeq2[y] == 'T') or (DNASeq1[x] == 'T' and DNASeq2[y] == 'A')):
-        return -.15
+        return -0.15
     elif ((DNASeq1[x] == 'G' and DNASeq2[y] == 'C') or (DNASeq1[x] == 'C' and DNASeq2[y] == 'G')):
-        return -.15
+        return -0.15
     else:
-        return -.1
+        return -0.1
 
 
 def DNASeqAlignment(DNASeq1,DNASeq2,outputPath):
@@ -86,7 +86,7 @@ def DNASeqAlignment(DNASeq1,DNASeq2,outputPath):
     # Compute new values for similarityScore and sequenceAlignment1 and
     # sequenceAlignment2 #
     #########################################################################################
-
+    
     Array = []
 
     col = len(DNASeq1) + 1              #length of first + 1 for blanks
@@ -96,20 +96,28 @@ def DNASeqAlignment(DNASeq1,DNASeq2,outputPath):
         Array.append([0] * row)
  
     for x in range(col):                #init 0th col
-        Array[x][0] = 0 - (.2*x)
+        Array[x][0] = 0 - (0.2*x)
 
     for x in range(row):                #init 0th row
-        Array[0][x] = 0 - (.2*x)
+        Array[0][x] = 0 - (0.2*x)
 
     for x in range(1, col):             #fill out the table
         for y in range(1, row):
-            remove = Array[x - 1][y] - .2
-            insert = Array[x][y - 1] - .2
+            remove = Array[x - 1][y] - 0.2
+            insert = Array[x][y - 1] - 0.2
             match = diff(x - 1, y - 1, DNASeq1, DNASeq2) + Array[x - 1][y - 1]
-            Array[x][y] = max(remove, insert, match)
+            Array[x][y] = biggest(remove, insert, match)
+            if (Array[x][y] > -0.0001 and Array[x][y] < .0001):
+                Array[x][y] = 0
     
     similarityScore = Array[col - 1][row - 1] #score = bottom right of array
     
+    for c in range(col):
+        for r in range(row):
+            print '{:7}'.format(Array[c][r]),
+        print
+
+
     a = col - 1
     b = row - 1
     c = []
