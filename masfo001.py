@@ -107,15 +107,15 @@ def DNASeqAlignment(DNASeq1,DNASeq2,outputPath):
             insert = Array[x][y - 1] - 0.2
             match = diff(x - 1, y - 1, DNASeq1, DNASeq2) + Array[x - 1][y - 1]
             Array[x][y] = biggest(remove, insert, match)
-            if (Array[x][y] > -0.0001 and Array[x][y] < .0001):
+            if (Array[x][y] > -0.0001 and Array[x][y] < .0001):     #fixes bug when # = 0
                 Array[x][y] = 0
     
     similarityScore = Array[col - 1][row - 1] #score = bottom right of array
     
-    for c in range(col):
-        for r in range(row):
-            print '{:7}'.format(Array[c][r]),
-        print
+    #for c in range(col):
+    #    for r in range(row):
+    #        print '{:7}'.format(Array[c][r]),
+    #    print
 
 
     a = col - 1
@@ -140,20 +140,28 @@ def DNASeqAlignment(DNASeq1,DNASeq2,outputPath):
         elif (h == k):
             a = a - 1
             c.append(3)
-
+    
     seq1 = []
-    for x in DNASeq1:
-        seq1.append(x)
+    seq1_temp = list(DNASeq1[::-1])
     seq2 = []
-    for x in DNASeq2:
-        seq2.append(x)
+    seq2_temp = list(DNASeq2[::-1])
     for x in range (0, len(c)):         #make subsequence
         if (c[x] == 1):                 #if moved up
-            seq2[row - x] = '_'
+            seq1.append('-')
+            seq2.append(seq2_temp[len(seq2_temp) - 1])
+            seq2_temp.pop()
         elif (c[x] == 2):               #if moved diagonal
-            continue 
+            seq1.append(seq1_temp[len(seq1_temp) - 1])
+            seq1_temp.pop()
+            seq2.append(seq2_temp[len(seq2_temp) - 1])
+            seq2_temp.pop()
         elif (c[x] == 3):               #if moved left
-            seq1[col - x] = '_'
+            seq1.append(seq1_temp[len(seq1_temp) - 1])
+            seq1_temp.pop()
+            seq2.append('-')
+
+    #print seq1
+    #print seq2
 
     sequenceAlignment1 = ''.join(seq1)
     sequenceAlignment2 = ''.join(seq2)
