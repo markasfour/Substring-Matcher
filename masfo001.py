@@ -59,7 +59,7 @@ def studentInfo():
     info = info + 'Python version: ' + pythonVersion + '\n'
     return info
 
-def biggest(a, b, c):
+def biggest(a, b, c):                #find the max of the three values
     Max = a
     if b > Max:
         Max = b
@@ -67,8 +67,8 @@ def biggest(a, b, c):
         Max = c
     return Max
 
-def diff(x, y, DNASeq1, DNASeq2):
-    if (DNASeq1[x] == DNASeq2[y]):
+def diff(x, y, DNASeq1, DNASeq2):   #calculates the cost of matching to chars    
+    if (DNASeq1[x] == DNASeq2[y]):  
         return 1
     elif ((DNASeq1[x] == 'A' and DNASeq2[y] == 'T') or (DNASeq1[x] == 'T' and DNASeq2[y] == 'A')):
         return -0.15
@@ -87,90 +87,100 @@ def DNASeqAlignment(DNASeq1,DNASeq2,outputPath):
     # sequenceAlignment2 #
     #########################################################################################
     
-    Array = []
+    Array = []                          #stores the costs
+    Array2 = []                         #stores the direction of calculated costs
 
     col = len(DNASeq1) + 1              #length of first + 1 for blanks
     row = len(DNASeq2) + 1              #length of second + 1 for blanks
 
-    for x in range(col):                #construct an array
+    for x in range(col):                #construct cost array
         Array.append([0] * row)
  
-    for x in range(col):                #init 0th col
+    for x in range(col):                #construct direction array
+        Array2.append(['d'] * row)      #initialize all to d = diagonal 
+
+    for x in range(col):                #init 0th col for cost array
+        Array[0][x] = 0 - (0.2*x)
+
+    for x in range(row):                #init 0th row for cost array
         Array[x][0] = 0 - (0.2*x)
 
-    for x in range(row):                #init 0th row
-        Array[0][x] = 0 - (0.2*x)
+    for x in range(col):                #init 0th col for direction array
+        Array2[0][x] = 'l'
+
+    for x in range(row):                #init 0th row for direction array
+        Array2[x][0] = 'u'
 
     for x in range(1, col):             #fill out the table
         for y in range(1, row):
-            remove = Array[x - 1][y] - 0.2
-            insert = Array[x][y - 1] - 0.2
+            insert = Array[x - 1][y] - 0.2
+            remove = Array[x][y - 1] - 0.2
             match = diff(x - 1, y - 1, DNASeq1, DNASeq2) + Array[x - 1][y - 1]
             Array[x][y] = biggest(remove, insert, match)
+            if (remove == biggest(remove, insert, match)):
+                Array2[x][y] = 'l'      #l = left 
+            elif (insert == biggest(remove, insert, match)):
+                Array2[x][y] = 'u'      #u = up
+            else:
+                Array2[x][y] = 'd'      #d = diagonal
+
             if (Array[x][y] > -0.0001 and Array[x][y] < .0001):     #fixes bug when # = 0
                 Array[x][y] = 0
     
     similarityScore = Array[col - 1][row - 1] #score = bottom right of array
     
-    #for c in range(col):
-    #    for r in range(row):
-    #        print '{:7}'.format(Array[c][r]),
-    #    print
+    for c in range(col):
+        for r in range(row):
+            print (Array[c][r]),
+            print '\t',
+        print
 
-
-    a = col - 1
+    for c in range(col):
+        for r in range(row):
+            print (Array2[c][r]),
+            print '\t',
+        print
+    
+    a = col - 1 
     b = row - 1
     c = []
     while (a != 0 and b != 0):          #find sequence
-        if (a != 0):
-            i = Array[a][b - 1]         #look above
-        if (a != 0 and b != 0):
-            j = Array[a - 1][b - 1]     #look diagonal
-        if ( b != 0):
-            k = Array[a - 1][b]         #look left
+        c.append(Array2[a][b])
+        if (Array2[a][b] == 'd'):
+            a = a - 1
+            b = b - 1
+        elif (Array2[a][b] == 'l'):
+            b = b - 1
+        else:
+            a = a - 1
 
-        h = max(i, j, k)
-        if (h == i):
-            b = b - 1
-            c.append(1)                 
-        elif (h == j):
-            a = a - 1
-            b = b - 1
-            c.append(2)                 
-        elif (h == k):
-            a = a - 1
-            c.append(3)
-    
+    print c
+    c.reverse()
+    print c
     seq1 = []
-    seq1_temp = list(DNASeq1[::-1])
+    seq1_temp = list(DNASeq1)
     seq2 = []
-    seq2_temp = list(DNASeq2[::-1])
+    seq2_temp = list(DNASeq2)
     for x in range (0, len(c)):         #make subsequence
-        if (c[x] == 1):                 #if moved up
+        if (c[x] == 'l'):                 #if moved up
             seq1.append('-')
-            seq2.append(seq2_temp[len(seq2_temp) - 1])
-            seq2_temp.pop()
-        elif (c[x] == 2):               #if moved diagonal
-            seq1.append(seq1_temp[len(seq1_temp) - 1])
-            seq1_temp.pop()
-            seq2.append(seq2_temp[len(seq2_temp) - 1])
-            seq2_temp.pop()
-        elif (c[x] == 3):               #if moved left
-            seq1.append(seq1_temp[len(seq1_temp) - 1])
-            seq1_temp.pop()
+            seq2.append(seq2_temp[0])
+            seq2_temp.pop(0)
+        elif (c[x] == 'd'):               #if moved diagonal
+            seq1.append(seq1_temp[0])
+            seq1_temp.pop(0)
+            seq2.append(seq2_temp[0])
+            seq2_temp.pop(0)
+        elif (c[x] == 'u'):               #if moved left
+            seq1.append(seq1_temp[0])
+            seq1_temp.pop(0)
             seq2.append('-')
 
-    #print seq1
-    #print seq2
+    print seq1
+    print seq2
 
     sequenceAlignment1 = ''.join(seq1)
     sequenceAlignment2 = ''.join(seq2)
-
-    #for c in range(col):
-    #    for r in range(row):
-    #        print Array[c][r],
-    #    print
-
 
     #################################  Output Section  ######################################
     result = "Similarity score: " + str(similarityScore) + '\n'
